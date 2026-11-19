@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% from 'macros.html' import badge %}
+{% block title %}{{ 'Tiket Saya' if is_employee else 'Antrean Tiket' }} · Helpdesk IT{% endblock %}
+{% block content %}
+<header class="page-heading">
+  <div><p class="eyebrow">HELPDESK INTERNAL</p><h1>{{ 'Tiket Saya' if is_employee else 'Antrean Tiket' }}</h1><p class="text-secondary mb-0">{{ 'Pantau permintaan bantuan dan perkembangan tiket Anda.' if is_employee else 'Kelola permintaan bantuan dan tindak lanjut tim IT.' }}</p></div>
+  <a class="btn btn-primary" href="{{ url_for('tickets.new') }}">+ Buat Tiket</a>
+</header>
+<section class="status-grid" aria-label="Ringkasan status tiket">
+{% for code,label in statuses.items() %}
+  <a class="card status-card status-card-{{ code }} {{ 'is-selected' if request.args.get('status') == code }}" href="{{ url_for(list_endpoint, status=code) }}" data-status="{{ code }}" data-count="{{ counts.get(code,0) }}" aria-label="{{ label }}: {{ counts.get(code,0) }} tiket">
+    <span>{{ label }}</span><strong>{{ counts.get(code,0) }}</strong><span class="small text-secondary">{{ 'tiket Anda' if is_employee else 'tiket' }}</span>
+  </a>
+{% endfor %}
+</section>
+<section class="card filter-panel" aria-labelledby="filter-heading">
+  <h2 class="h5" id="filter-heading">Cari & filter tiket</h2>
+  <form method="get" action="{{ url_for(list_endpoint) }}">
+    <div class="filter-grid">
+      <div class="filter-search"><label class="form-label" for="q">Nomor / judul tiket</label><input class="form-control" type="search" id="q" name="q" maxlength="200" value="{{ request.args.get('q','') }}" placeholder="IT-000001 atau judul tiket"></div>
+      {% for key,label,items in [('status','Status',statuses.items()),('priority','Prioritas',priorities.items())] %}
+      <div><label class="form-label" for="{{ key }}">{{ label }}</label><select class="form-select" id="{{ key }}" name="{{ key }}"><option value="">Semua {{ label|lower }}</option>{% for val,text in items %}<option value="{{ val }}" {{ 'selected' if request.args.get(key)==val }}>{{ text }}</option>{% endfor %}</select></div>
+      {% endfor %}
+      <div><label class="form-label" for="category_id">Kategori</label><select class="form-select" id="category_id" name="category_id"><option value="">Semua kategori</option>{% for c in categories %}<option value="{{ c.id }}" {{ 'selected' if request.args.get('category_id')==c.id|string }}>{{ c.name }}</option>{% endfor %}</select></div>
+      {% if not is_employee %}<div><label class="form-label" for="assignee_id">Agen</label><select class="form-select" id="assignee_id" name="assignee_id"><option value="">Semua agen</option><option value="unassigned" {{ 'selected' if request.args.get('assignee_id')=='unassigned' }}>Belum ditugaskan</option>{% for a in agents %}<option value="{{ a.id }}" {{ 'selected' if request.args.get('assignee_id')==a.id|string }}>{{ a.name }}</option>{% endfor %}</select></div>{% endif %}
+    </div>
+    <div class="filter-actions"><button class="btn btn-primary" type="submit">Terapkan Filter</button>{% if has_filters %}<a class="btn btn-outline-secondary" href="{{ url_for(list_endpoint) }}">Reset Filter</a>{% endif %}</div>
+  </form>
+</section>
+<section class="card ticket-list" aria-labelledby="list-heading">
+  <div class="list-heading"><h2 class="h5 mb-0" id="list-heading">{{ 'Daftar Tiket Saya' if is_employee else 'Daftar Tiket' }}</h2><span class="text-secondary">{{ pagination.total }}{{ ' hasil' if has_filters else ' tiket' }}{% if has_filters %} dari {{ total_tickets }} tiket{% endif %}</span></div>
+  {% if pagination.items %}
+  <div class="table-responsive ticket-table-wrap" tabindex="0" role="region" aria-label="Daftar tiket; geser untuk melihat semua kolom">
+    <table class="table table-hover mb-0 ticket-table"><thead><tr><th scope="col">Nomor / Judul</th><th scope="col">Kategori</th><th scope="col">Prioritas</th><th scope="col">Status</th>{% if not is_employee %}<th scope="col">Agen</th>{% endif %}<th scope="col">Diperbarui</th></tr></thead><tbody>
+    {% for ticket in pagination.items %}<tr>
+      <td class="ticket-subject"><a href="{{ url_for('tickets.detail',tid=ticket.id) }}"><span class="ticket-reference">{{ ticket.reference }}</span><span class="ticket-title">{{ ticket.title }}</span></a></td>
+      <td>{{ ticket.category.name }}</td><td>{{ badge(ticket.priority, priorities[ticket.priority], 'priority') }}</td><td>{{ badge(ticket.status, statuses[ticket.status]) }}</td>
+      {% if not is_employee %}<td>{{ ticket.assignee.name if ticket.assignee else 'Belum ditugaskan' }}</td>{% endif %}
+      <td class="ticket-date">{{ ticket.updated_at|jakarta }}</td>
+    </tr>{% endfor %}
+    </tbody></table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    {% if total_tickets == 0 %}<div class="empty-icon" aria-hidden="true">＋</div><h3>{{ 'Belum ada tiket' if is_employee else 'Antrean masih kosong' }}</h3><p class="text-secondary">{{ 'Butuh bantuan IT? Buat tiket pertama Anda dan pantau perkembangannya di sini.' if is_employee else 'Permintaan bantuan yang masuk akan muncul di sini.' }}</p><a class="btn btn-primary" href="{{ url_for('tickets.new') }}">Buat Tiket</a>
+    {% else %}<div class="empty-icon" aria-hidden="true">⌕</div><h3>Tidak ada tiket yang cocok</h3><p class="text-secondary">Coba kata kunci lain atau hapus filter untuk melihat tiket yang tersedia.</p><a class="btn btn-outline-primary" href="{{ url_for(list_endpoint) }}">Reset Filter</a>{% endif %}
+  </div>
+  {% endif %}
+  {% if pagination.pages > 1 %}
+  <nav class="list-pagination" aria-label="Navigasi halaman tiket">
+    <span class="small text-secondary">Halaman {{ pagination.page }} dari {{ pagination.pages }}</span>
+    <div class="pagination-links">
+      {% if pagination.has_prev %}<a class="btn btn-outline-secondary btn-sm" href="{{ pagination_url(pagination.prev_num) }}" rel="prev">Sebelumnya</a>{% endif %}
+      {% for page in pagination.iter_pages(left_edge=1,right_edge=1,left_current=1,right_current=2) %}{% if page %}<a class="btn btn-sm {{ 'btn-primary' if page == pagination.page else 'btn-outline-secondary' }}" href="{{ pagination_url(page) }}" aria-label="Halaman {{ page }}" {% if page == pagination.page %}aria-current="page"{% endif %}>{{ page }}</a>{% else %}<span aria-hidden="true">…</span>{% endif %}{% endfor %}
+      {% if pagination.has_next %}<a class="btn btn-outline-secondary btn-sm" href="{{ pagination_url(pagination.next_num) }}" rel="next">Berikutnya</a>{% endif %}
+    </div>
+  </nav>
+  {% endif %}
+</section>
+{% endblock %}

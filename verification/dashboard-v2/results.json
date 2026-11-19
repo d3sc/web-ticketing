@@ -1,0 +1,30 @@
+{
+  "base_url": "http://127.0.0.1:5017",
+  "browser": "Playwright Chromium",
+  "checks": [
+    "Admin login and root land at IT queue; admin created regression accounts",
+    "Employee root: only 3 own tickets, scoped counts, no IT queue navigation or agent filter; all priorities visible",
+    "Employee search cannot find other owner; direct IT/admin/foreign ticket and reply return 403",
+    "Priority Normal preselected, High retained after validation failure, invalid choice rejected in Indonesian",
+    "IT login/root land at queue; claim, reply and close workflow remains functional",
+    "Admin queue shows saved High priority; search/filter retained; desktop and mobile layouts verified for all roles"
+  ],
+  "page_errors": [],
+  "tickets": [
+    {
+      "url": "http://127.0.0.1:5017/tickets/4",
+      "title": "Regresi low 0db872e4",
+      "priority": "low"
+    },
+    {
+      "url": "http://127.0.0.1:5017/tickets/5",
+      "title": "Regresi normal 0db872e4",
+      "priority": "normal"
+    },
+    {
+      "url": "http://127.0.0.1:5017/tickets/6",
+      "title": "Regresi high 0db872e4",
+      "priority": "high"
+    }
+  ]
+}

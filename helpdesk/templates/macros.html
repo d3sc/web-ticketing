@@ -1,0 +1,23 @@
+{% macro validation_error(error) -%}
+{%- if error == 'This field is required.' -%}Kolom ini wajib diisi.
+{%- elif error == 'Not a valid choice.' or error == 'Invalid Choice: could not coerce.' -%}Pilih salah satu opsi yang tersedia.
+{%- elif error == 'Invalid input.' -%}Format isian tidak valid.
+{%- elif error.startswith('Field cannot be longer than ') -%}Maksimal {{ error.split(' ')[5] }} karakter.
+{%- elif error.startswith('Field must be between ') -%}Panjang isian harus antara {{ error.split(' ')[4] }} dan {{ error.split(' ')[6] }} karakter.
+{%- elif 'CSRF' in error -%}Sesi formulir tidak valid atau kedaluwarsa. Muat ulang halaman dan coba lagi.
+{%- else -%}{{ error }}{%- endif -%}
+{%- endmacro %}
+{% macro fields(form) %}
+{{ form.hidden_tag() }}
+{% if form.csrf_token is defined %}{% for error in form.csrf_token.errors %}<div class="alert alert-danger" role="alert">{{ validation_error(error) }}</div>{% endfor %}{% endif %}
+{% for field in form if field.type not in ['CSRFTokenField','HiddenField'] %}
+<div class="mb-3">
+  {{ field.label(class='form-label') }}
+  {% set css = 'form-select' if field.type=='SelectField' else 'form-control' %}
+  {% if field.type=='TextAreaField' %}{{ field(class=css, rows=5, aria_invalid='true' if field.errors else 'false', aria_describedby=field.id ~ '-errors') }}{% else %}{{ field(class=css, aria_invalid='true' if field.errors else 'false', aria_describedby=field.id ~ '-errors') }}{% endif %}
+  <div id="{{ field.id }}-errors">{% for error in field.errors %}<div class="text-danger small" role="alert">{{ validation_error(error) }}</div>{% endfor %}</div>
+</div>
+{% endfor %}
+{% endmacro %}
+{% macro token() %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endmacro %}
+{% macro badge(code, label, kind='status') %}<span class="ticket-badge {{ kind }}-{{ code }}">{{ label }}</span>{% endmacro %}

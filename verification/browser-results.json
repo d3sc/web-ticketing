@@ -1,0 +1,15 @@
+{
+  "engine": "Chromium",
+  "base_url": "http://127.0.0.1:5017",
+  "ticket_id": "7",
+  "checks": [
+    "Admin created employee and IT accounts through browser forms",
+    "Employee submitted ticket with initial Open/Normal",
+    "IT agent claimed ticket and replied",
+    "Employee saw IT reply in browser",
+    "Second employee direct URL and reply rejected: HTTP 403",
+    "Unassigned IT agent update rejected: HTTP 403",
+    "Agent progressed, resolved, reopened, resolved and closed ticket; closed reply rejected HTTP 409",
+    "390px mobile viewport has no horizontal overflow; no JavaScript page errors"
+  ]
+}

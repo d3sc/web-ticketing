@@ -1,0 +1,12 @@
+{
+  "base_url": "http://127.0.0.1:5018",
+  "database": "isolated MySQL helpdesk_test",
+  "checks": [
+    "Password actions available for employee, IT agent and administrator",
+    "CSRF, wrong current admin password, short password and confirmation mismatch rejected",
+    "employee: password changed via browser; old login rejected, new login works; non-admin GET/POST denied",
+    "agent: password changed via browser; old login rejected, new login works; non-admin GET/POST denied",
+    "admin: password changed via browser; old login rejected, new login works"
+  ],
+  "page_errors": []
+}

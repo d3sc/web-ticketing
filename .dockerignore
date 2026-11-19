@@ -1,0 +1,8 @@
+.env
+.local-credentials
+.venv
+.git
+__pycache__
+.pytest_cache
+instance
+*.pyc

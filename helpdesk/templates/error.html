@@ -1,0 +1,1 @@
+{% extends 'base.html' %}{% block title %}Kesalahan {{ error.code }} · Helpdesk IT{% endblock %}{% block content %}<div class="alert alert-warning"><h1 class="h3">Permintaan tidak dapat diproses ({{ error.code }})</h1><p>{{ error.description }}</p></div><a href="{{ url_for('tickets.dashboard') }}" class="btn btn-primary">Kembali ke Beranda</a>{% endblock %}

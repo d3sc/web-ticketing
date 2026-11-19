@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="id">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{% block title %}Helpdesk IT{% endblock %}</title><link rel="stylesheet" href="{{ url_for('static',filename='fallback.css') }}"><link rel="stylesheet" href="{{ url_for('static',filename='app.css') }}"></head>
+<body class="bg-light">
+<a class="skip-link" href="#main-content">Lewati ke konten</a>
+<nav class="navbar navbar-expand navbar-dark bg-primary" aria-label="Navigasi utama"><div class="container">
+<a class="navbar-brand" href="{{ url_for('tickets.dashboard') }}">Helpdesk <span>IT</span></a>
+{% if current_user.is_authenticated %}
+{% set home_endpoint = 'tickets.dashboard' if current_user.role == 'employee' else 'tickets.queue' %}
+<div class="navbar-nav flex-wrap"><a class="nav-link {{ 'active' if request.endpoint == home_endpoint }}" href="{{ url_for(home_endpoint) }}" {% if request.endpoint == home_endpoint %}aria-current="page"{% endif %}>{{ 'Tiket Saya' if current_user.role=='employee' else 'Antrean Tiket' }}</a><a class="nav-link {{ 'active' if request.endpoint == 'tickets.new' }}" href="{{ url_for('tickets.new') }}">Buat Tiket</a>{% if current_user.role=='admin' %}<a class="nav-link" href="{{ url_for('admin.users') }}">Pengguna</a><a class="nav-link" href="{{ url_for('admin.categories') }}">Kategori</a>{% endif %}</div>
+<form method="post" action="{{ url_for('auth.logout') }}" class="account-menu ms-auto"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><span class="text-white account-name">{{ current_user.name }}</span><button class="btn btn-outline-light btn-sm">Keluar</button></form>
+{% endif %}
+</div></nav>
+<main id="main-content" class="container py-4">{% for category, message in get_flashed_messages(with_categories=true) %}<div class="alert alert-{{ category }}" role="status">{{ message }}</div>{% endfor %}{% block content %}{% endblock %}</main>
+<footer class="container text-secondary pb-4">Helpdesk internal · Waktu Asia/Jakarta (WIB)</footer>
+</body></html>
