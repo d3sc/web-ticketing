@@ -1,10 +1,10 @@
 from functools import wraps
-from flask import Blueprint, abort, render_template, request, redirect, url_for, flash
+from flask import Blueprint, abort, render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
 from sqlalchemy.exc import IntegrityError
 from . import db
-from .models import User, Category, Ticket
-from .forms import UserForm, CategoryForm, ChangePasswordForm
+from .models import User, Category, Ticket, TelegramSettings, TelegramOutbox
+from .forms import UserForm, CategoryForm, ChangePasswordForm, TelegramSettingsForm
 
 bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -78,6 +78,43 @@ def edit_user(uid):
     user.role, user.active = role, active == '1'
     commit()
     return redirect(url_for('admin.users'))
+
+
+@bp.route('/settings/telegram', methods=['GET', 'POST'])
+@admin_only
+def telegram_settings():
+    from .telegram import valid_base_url
+    settings = db.session.get(TelegramSettings, 1)
+    form = TelegramSettingsForm(obj=settings)
+    if form.validate_on_submit():
+        if settings is None:
+            settings = TelegramSettings(id=1)
+            db.session.add(settings)
+        settings.enabled, settings.chat_id = form.enabled.data, form.chat_id.data
+        commit()
+        flash('Pengaturan Telegram berhasil disimpan.', 'success')
+        return redirect(url_for('admin.telegram_settings'))
+    rows = db.session.scalars(db.select(TelegramOutbox).order_by(TelegramOutbox.id.desc()).limit(20)).all()
+    return render_template('telegram_settings.html', form=form, rows=rows,
+                           token_ready=bool(current_app.config.get('TELEGRAM_BOT_TOKEN')),
+                           base_ready=valid_base_url(current_app.config.get('APP_BASE_URL'))), (400 if request.method == 'POST' else 200)
+
+
+@bp.post('/settings/telegram/test')
+@admin_only
+def telegram_test():
+    from .telegram import send_message, valid_chat_id, TelegramDeliveryError
+    settings = db.session.get(TelegramSettings, 1)
+    if not settings or not valid_chat_id(settings.chat_id):
+        flash('Simpan Chat ID Tujuan yang valid terlebih dahulu.', 'danger')
+    else:
+        try:
+            send_message(settings.chat_id, 'Pesan tes Helpdesk IT. Notifikasi Telegram berhasil terhubung.')
+        except TelegramDeliveryError as exc:
+            flash(str(exc), 'danger')
+        else:
+            flash('Pesan tes berhasil dikirim ke Chat ID Tujuan yang tersimpan.', 'success')
+    return redirect(url_for('admin.telegram_settings'))
 
 
 @bp.route('/categories', methods=['GET','POST'])

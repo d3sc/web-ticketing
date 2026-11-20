@@ -114,6 +114,8 @@ def new():
         db.session.add(ticket)
         db.session.flush()
         event(ticket, 'created', 'Tiket dibuat')
+        from .telegram import queue_new_ticket
+        queue_new_ticket(ticket)
         return done(ticket)
     return render_template('new_ticket.html', form=form), (400 if request.method=='POST' else 200)
 

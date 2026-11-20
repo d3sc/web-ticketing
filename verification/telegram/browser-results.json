@@ -1,0 +1,14 @@
+{
+  "browser": "Playwright Chromium",
+  "database": "isolated MySQL helpdesk_test",
+  "telegram": "MOCKED; live delivery unverified",
+  "vpn_device_link": "unverified",
+  "checks": [
+    "Admin saves negative group destination and toggle in MySQL; test message success via mocked Telegram",
+    "Employee and IT agent: settings GET, settings POST and test POST denied with 403",
+    "Only ticket creation queues one committed alert; Indonesian summary, WIB and Buka Tiket link verified; replies, claim, priority/status updates enqueue nothing",
+    "Absolute button/fallback URL opens ticket; anonymous requires login and other employee receives 403 (local browser hostname mapping, NOT connected VPN device)",
+    "Mocked Telegram 503 records failure/retry; ticket creation and saved ticket remain available"
+  ],
+  "page_errors": []
+}

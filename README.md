@@ -93,6 +93,12 @@ After obtaining Docker permission and supplying Compose's required .env values:
 
 The tests service waits for test-db health and executes real Alembic upgrades followed by pytest. A failing command must block acceptance. Do not replace these URLs with the production database URL. For an independently provisioned disposable MySQL database named helpdesk_test, set both DATABASE_URL (for migration) and TEST_DATABASE_URL (for pytest) to that isolated database, migrate first, then run tests. SQLite cannot validate MySQL row locks, deadlocks, collation or concurrent migration behavior.
 
+## Notifikasi Telegram (pengganti rencana email tiket baru)
+
+Panduan lengkap bot khusus, Chat ID pribadi/grup, APP_BASE_URL VPN/Tailscale, konfigurasi Docker, worker, pengujian dan batasan pengiriman: [docs/telegram-notifications.md](docs/telegram-notifications.md).
+
+Menu administrator **Notifikasi Telegram** menyimpan toggle dan satu tujuan di MySQL. Pesan tiket baru memakai transactional outbox; pengiriman terjadi melalui worker setelah commit. Default nonaktif, tidak melakukan backfill tiket lama. Token hanya dibaca dari environment. Tidak ada trigger email tiket baru pada checkout ini.
+
 ## Application behavior
 
 - Employees land on `/` (Tiket Saya), with scoped counts, search, filters and 20-row pagination over their own tickets only. `/tickets` is reserved for IT/admin and returns 403 to employees; IT/admin login and root lead to that queue. Navigation is role-specific.

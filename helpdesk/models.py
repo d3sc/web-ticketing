@@ -1,7 +1,11 @@
 from datetime import datetime, timezone
+from sqlalchemy.dialects.mysql import DATETIME
+
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import db
+
+OUTBOX_TIME = db.DateTime().with_variant(DATETIME(fsp=6), 'mysql')
 
 
 def utcnow():
@@ -84,3 +88,30 @@ class TicketEvent(db.Model):
     detail = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=utcnow)
     actor = db.relationship(User)
+
+
+class TelegramSettings(db.Model):
+    __tablename__ = 'telegram_settings'
+    id = db.Column(db.Integer, primary_key=True, default=1, autoincrement=False)
+    enabled = db.Column(db.Boolean, nullable=False, default=False, server_default=db.false())
+    chat_id = db.Column(db.String(32), nullable=False, default='', server_default='')
+    __table_args__ = (db.CheckConstraint('id = 1', name='telegram_settings_singleton'),)
+
+
+class TelegramOutbox(db.Model):
+    __tablename__ = 'telegram_outbox'
+    id = db.Column(db.Integer, primary_key=True)
+    ticket_id = db.Column(db.Integer, db.ForeignKey('tickets.id'), nullable=False, unique=True)
+    chat_id = db.Column(db.String(32), nullable=False)
+    text = db.Column(db.Text, nullable=False)
+    url = db.Column(db.String(2048), nullable=False, default='')
+    state = db.Column(db.String(10), nullable=False, default='pending', server_default='pending')
+    attempts = db.Column(db.Integer, nullable=False, default=0, server_default='0')
+    available_at = db.Column(OUTBOX_TIME, nullable=False, default=utcnow)
+    sent_at = db.Column(OUTBOX_TIME)
+    last_error = db.Column(db.Text)
+    created_at = db.Column(OUTBOX_TIME, nullable=False, default=utcnow)
+    __table_args__ = (
+        db.CheckConstraint("state IN ('pending','sent','failed')", name='telegram_outbox_state'),
+        db.Index('ix_telegram_outbox_due', 'state', 'available_at', 'id'),
+    )

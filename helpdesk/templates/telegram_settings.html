@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% from 'macros.html' import validation_error, token %}
+{% block title %}Notifikasi Telegram · Helpdesk IT{% endblock %}
+{% block content %}
+<h1 class="h3">Notifikasi Telegram</h1>
+<p class="text-secondary">Pengaturan satu tujuan: chat pribadi atau grup tim IT. Hanya tiket baru yang mengirim notifikasi; balasan dan perubahan tiket tidak mengirim notifikasi.</p>
+<div class="row g-4">
+  <div class="col-lg-6">
+    <form method="post" class="card card-body mb-3">
+      {{ form.hidden_tag() }}
+      <div class="form-check mb-3">{{ form.enabled(class='form-check-input', role='switch') }} {{ form.enabled.label(class='form-check-label') }}</div>
+      <div class="mb-3">{{ form.chat_id.label(class='form-label') }}{{ form.chat_id(class='form-control', placeholder='Contoh: -1001234567890', maxlength=32, aria_describedby='chat-help') }}
+        <div class="text-secondary small" id="chat-help">ID berupa angka; ID grup dapat diawali tanda minus. Simpan perubahan sebelum mengirim pesan tes.</div>
+        {% for error in form.chat_id.errors %}<div class="text-danger" role="alert">{{ validation_error(error) }}</div>{% endfor %}
+      </div>
+      <button class="btn btn-primary" type="submit">Simpan Pengaturan</button>
+    </form>
+    <form method="post" action="{{ url_for('admin.telegram_test') }}" class="card card-body">
+      {{ token() }}<h2 class="h5">Uji Koneksi</h2><p>Pesan tes dikirim langsung ke tujuan yang sudah tersimpan, termasuk saat notifikasi otomatis nonaktif.</p>
+      <button class="btn btn-outline-primary" type="submit">Kirim Pesan Tes</button>
+    </form>
+  </div>
+  <div class="col-lg-6"><section class="card card-body">
+    <h2 class="h5">Konfigurasi Server</h2>
+    <p>Token bot: <strong>{{ 'Tersedia' if token_ready else 'Belum dikonfigurasi' }}</strong><br>Alamat aplikasi: <strong>{{ 'Valid' if base_ready else 'Belum dikonfigurasi atau tidak valid' }}</strong></p>
+    {% if not token_ready %}<p class="text-danger">Administrator server perlu mengisi TELEGRAM_BOT_TOKEN pada environment web dan worker. Token tidak ditampilkan di halaman ini.</p>{% endif %}
+    {% if not base_ready %}<p class="text-danger">Isi APP_BASE_URL dengan alamat HTTP/HTTPS aplikasi yang dapat dibuka perangkat tim IT melalui VPN/Tailscale. Jangan gunakan localhost.</p>{% endif %}
+    <p>Di Telegram, buka @BotFather, jalankan /newbot dan simpan token di environment server. Mulai chat dengan bot atau tambahkan bot ke grup tim IT dan izinkan mengirim pesan. Ambil ID tujuan melalui getUpdates dari server; panduan lengkap ada di README.</p>
+    <p>Pesan antrean menyimpan tujuan saat tiket dibuat. Mematikan notifikasi menjeda pengiriman antrean. Pengiriman ulang otomatis maksimal delapan percobaan untuk gangguan sementara.</p>
+  </section></div>
+</div>
+<section class="card card-body mt-4"><h2 class="h5">Riwayat Pengiriman Terbaru</h2>
+<div class="table-responsive" role="region" aria-label="Riwayat notifikasi, geser mendatar pada layar kecil" tabindex="0"><table class="table telegram-history"><thead><tr><th>Tiket</th><th>Status</th><th>Percobaan</th><th>Waktu / Jadwal (WIB)</th><th>Keterangan</th></tr></thead><tbody>
+{% for row in rows %}<tr><td><a href="{{ url_for('tickets.detail', tid=row.ticket_id) }}">{{ 'IT-%06d'|format(row.ticket_id) }}</a></td><td>{{ {'pending':'Menunggu', 'sent':'Terkirim', 'failed':'Gagal'}[row.state] }}</td><td>{{ row.attempts }}</td><td>{{ (row.sent_at or row.available_at)|jakarta }}</td><td>{{ row.last_error or '—' }}</td></tr>
+{% else %}<tr><td colspan="5">Belum ada antrean notifikasi.</td></tr>{% endfor %}
+</tbody></table></div></section>
+{% endblock %}

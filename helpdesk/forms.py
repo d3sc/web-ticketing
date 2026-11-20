@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, TextAreaField, SelectField
+from wtforms import StringField, PasswordField, TextAreaField, SelectField, BooleanField
 from wtforms.validators import DataRequired, Length, Regexp, EqualTo
 
 
@@ -36,6 +36,17 @@ class UserForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Length(max=254), Regexp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$')])
     password = PasswordField('Kata sandi', validators=[DataRequired(), Length(min=12, max=128)])
     role = SelectField('Peran', choices=[('employee','Karyawan'),('it','Agen IT'),('admin','Administrator')])
+
+
+class TelegramSettingsForm(FlaskForm):
+    enabled = BooleanField('Aktifkan notifikasi tiket baru')
+    chat_id = StringField('Chat ID Tujuan', filters=[lambda value: value.strip() if value else ''])
+
+    def validate_chat_id(self, field):
+        from .telegram import valid_chat_id
+        from wtforms.validators import ValidationError
+        if (self.enabled.data or field.data) and not valid_chat_id(field.data):
+            raise ValidationError('Chat ID harus berupa angka positif atau negatif, bukan nol (maksimal 32 karakter).')
 
 
 class CategoryForm(FlaskForm):

@@ -1,0 +1,14 @@
+{
+  "ticket_id": 240,
+  "state": "sent",
+  "attempts": 1,
+  "url": "https://ticket.zentradigitalsolution.my.id/tickets/240",
+  "error": null,
+  "sent_at": "2026-11-20 04:39:26.009219",
+  "local_ticket_browser_http": 200,
+  "configured_public_link_browser_http": 502,
+  "transport": "REAL Telegram HTTPS sendMessage; no mock",
+  "test_button": "success verified through browser",
+  "recipient_read_receipt": "not available via Bot API",
+  "production_5017": "not modified"
+}

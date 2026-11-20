@@ -41,6 +41,8 @@ h1 { line-height: 1.2; letter-spacing: -.035em; margin-bottom: .65rem; }
 .list-heading { padding: 1.15rem 1.25rem; display: flex; justify-content: space-between; gap: .75rem; align-items: center; flex-wrap: wrap; }
 .list-heading .text-secondary { font-size: .875rem; }
 .table-responsive { width: 100%; max-width: 100%; overflow-x: auto; }
+.telegram-history { width: 100%; min-width: 760px; border-collapse: collapse; table-layout: auto; }
+.telegram-history th, .telegram-history td:not(:last-child) { white-space: nowrap; }
 .ticket-table { width: 100%; min-width: 790px; border-collapse: collapse; table-layout: fixed; }
 .table td, .table th { padding: 1rem; text-align: left; vertical-align: middle; border-bottom: 1px solid #e6ebf2; }
 .ticket-table th { background: #f5f7fb; color: #52657d; font-size: .75rem; font-weight: 700; letter-spacing: .035em; }

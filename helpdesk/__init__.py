@@ -16,6 +16,7 @@ csrf = CSRFProtect()
 def create_app(config=None):
     app = Flask(__name__)
     app.config.from_mapping(SECRET_KEY=os.environ.get('SECRET_KEY'), SQLALCHEMY_DATABASE_URI=os.environ.get('DATABASE_URL', 'sqlite://'), SQLALCHEMY_TRACK_MODIFICATIONS=False, SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE='Lax', MAX_CONTENT_LENGTH=1024*1024)
+    app.config.update(TELEGRAM_BOT_TOKEN=os.environ.get('TELEGRAM_BOT_TOKEN', ''), APP_BASE_URL=os.environ.get('APP_BASE_URL', ''))
     app.config.update(config or {})
     if not app.config.get('SECRET_KEY'):
         if app.testing:
@@ -52,6 +53,8 @@ def create_app(config=None):
     app.register_blueprint(admin_bp)
     app.cli.add_command(create_admin)
     app.cli.add_command(seed_categories)
+    from .telegram import register_cli
+    register_cli(app)
 
     @login.user_loader
     def load_user(uid):

@@ -1,0 +1,38 @@
+{
+  "production_unchanged": true,
+  "production": {
+    "id": "a817a97d5b5705094e3cbe89c5d5ba09ac4b807400bcda03776786774fe1af82",
+    "image": "sha256:0022fd2ee82ddb68f15c5e300caaefd4c82527666528e5e475196b702831511e",
+    "started": "2026-11-19T15:24:38.828318968Z",
+    "restarts": 0,
+    "ports": {
+      "8000/tcp": [
+        {
+          "HostIp": "127.0.0.1",
+          "HostPort": "5017"
+        }
+      ]
+    }
+  },
+  "test": {
+    "id": "594e732daa84ac0d6542a177abe20f7a469b67d18650c83c10b4393d087b251d",
+    "image": "sha256:0d69112546b5ea7d7f4d0b6acd03f6b49d13801838540a15cd1233187ddc0c94",
+    "status": "running",
+    "restart_count": 0,
+    "oom_killed": false,
+    "networks": [
+      "web-ticketing_default"
+    ],
+    "mounts": [],
+    "ports": {
+      "8000/tcp": [
+        {
+          "HostIp": "127.0.0.1",
+          "HostPort": "5018"
+        }
+      ]
+    }
+  },
+  "old_container": "absent by both name and original ID; no removal performed; original writable layer not inspectable",
+  "telegram": "mocked; real bot token not configured"
+}

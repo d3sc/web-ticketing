@@ -22,6 +22,8 @@ services:
     environment:
       SECRET_KEY: ${SECRET_KEY:?Generate .env first}
       DATABASE_URL: mysql+pymysql://helpdesk:${DB_PASSWORD}@db/helpdesk?charset=utf8mb4
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      APP_BASE_URL: ${APP_BASE_URL:-}
     ports: ['127.0.0.1:5017:8000']
     depends_on:
       db:
@@ -32,6 +34,25 @@ services:
       timeout: 5s
       retries: 10
     restart: unless-stopped
+  telegram-worker:
+    image: web-ticketing:local
+    environment:
+      SECRET_KEY: ${SECRET_KEY:?Generate .env first}
+      DATABASE_URL: mysql+pymysql://helpdesk:${DB_PASSWORD}@db/helpdesk?charset=utf8mb4
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      APP_BASE_URL: ${APP_BASE_URL:-}
+    command: [flask, --app, helpdesk, telegram-worker]
+    depends_on:
+      db:
+        condition: service_healthy
+      web:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: [CMD, python, -c, 'import os,time; assert time.time()-os.stat("/tmp/telegram-worker-heartbeat").st_mtime < 600']
+      interval: 30s
+      timeout: 5s
+      retries: 3
   test-db:
     image: mysql:8.0
     profiles: [test]
